@@ -1,0 +1,22 @@
+# Environments
+.env
+.venv/
+venv/
+ENV/
+
+# Python caching
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Google API Credentials & State
+credentials.json
+token.json
+state.json
+
+# Temp folder
+.tmp/
+
+# IDE files
+.vscode/
+.idea/
