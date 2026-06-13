@@ -43,8 +43,8 @@ The application separates concerns into three distinct layers to ensure executio
 
 ### Layer 3: Execution (Deterministic Actions)
 
-* **`execution/auth.py`**: Handles OAuth 2.0 flow, token caching (`token.json`), and automatic token refreshes (restricted to `youtube.force-ssl` or minimally required scopes).
-* **`execution/youtube_client.py`**: Contains strictly defined functions for Data API communications (fetching uploads, posting threads).
+* **`execution/auth.py`**: Handles OAuth 2.0 flow, token caching (`token.json`), and automatic token refreshes (restricted to the `youtube.readonly` scope).
+* **`execution/youtube_client.py`**: Contains strictly defined functions for Data API communications (fetching uploads).
 
 ---
 
@@ -75,13 +75,13 @@ The core loop must use `asyncio` to ensure polling continues even while a commen
 2. **Detection Logic**: If the returned `videoId` differs from the one stored in `state.json`, a new upload is confirmed.
 3. **Delegation**: Upon detection, the bot immediately writes the new ID to `state.json`, then spawns an independent background task via `asyncio.create_task()` to handle the execution jitter and posting, while the main loop returns to polling.
 
-### Phase 5: Execution Jitter & Dynamic "First" Contextualization
+### Phase 5: Execution Jitter & Dynamic "First" Contextualization (Console Print Only)
 
-To safely claim the "First!" comment spot without triggering YouTube's spam filters, the bot mimics a fast human response and injects dynamic entropy.
+To simulate the speed and variance of a "First!" comment without any risk of suspension, the bot calculates human-like delay and prepares the dynamic text, then prints it to the console.
 
 1. **Execution Jitter (Behavioral Mask)**: Introduce a randomized asynchronous sleep between **14 and 28 seconds** inside the delegated background task.
-2. **Dynamic "First" Contextualization**: Never use static, one-word strings like "First" or "First!". Instead, interpolate variables into templates to change the text hash and prove context (e.g., "First! Can't wait to watch {video_title}." or "Here before the views update! ({timestamp})").
-3. **Posting**: Post the top-level comment via `youtube.commentThreads().insert` using the authorized Data API client.
+2. **Dynamic "First" Contextualization**: Never use static, one-word strings. Instead, interpolate variables into templates to demonstrate context (e.g., "First! Can't wait to watch {video_title}." or "Here before the views update! ({timestamp})").
+3. **Printing**: Output the finalized comment to the terminal console instead of posting it to YouTube.
 
 *Core Logic Structure Example:*
 
@@ -98,20 +98,23 @@ def get_execution_delay():
     # Behavioral mask: human reaction time buffer
     return random.uniform(14, 28)
 
-async def post_comment_with_jitter(video_id, template, title):
+async def print_comment_with_jitter(video_id, template, title):
     delay = get_execution_delay()
     print(f"Target locked: {video_id}. Jittering for {round(delay, 2)} seconds...")
     await asyncio.sleep(delay)
     
-    # Format contextual template (e.g., inject {title} or {timestamp}) and post here
-    print(f"Snipe complete on {video_id}!")
+    # Format contextual template (e.g., inject {title} or {timestamp})
+    # Print the comment to terminal instead of posting
+    comment_text = template.format(video_title=title, timestamp=int(time.time()))
+    print(f"\n[SIMULATED COMMENT POST] Video: {video_id} | Text: '{comment_text}'\n")
+    print(f"Snipe print complete on {video_id}!")
 
 async def polling_loop():
     while True:
         # Check API for new video...
         # If new_video_id != state["latest_id"]:
         #    update_state(new_video_id)
-        #    asyncio.create_task(post_comment_with_jitter(new_video_id, template, title))
+        #    asyncio.create_task(print_comment_with_jitter(new_video_id, template, title))
         
         await asyncio.sleep(get_polling_delay())
 
@@ -143,8 +146,7 @@ async def polling_loop():
 2. Start the bot.
 3. Upload an unlisted video.
 
-
-* **Verification**: Watch the console for the independent `asyncio` task spawning, verify the 14-28 second execution delay, and confirm the comment physically appears on the video via an incognito browser.
+* **Verification**: Watch the console for the independent `asyncio` task spawning, verify the 14-28 second execution delay, and confirm the simulated comment is logged to the console with the correct delay, timestamp, and video title. (Note: physical comment posting is disabled for safety; the output is verified via local console log).
 
 ---
 
@@ -153,7 +155,7 @@ async def polling_loop():
 The YouTube Data API v3 enforces a default daily quota limit of **10,000 units**.
 
 * `playlistItems().list` = 1 unit
-* `commentThreads().insert` = 50 units
+* Comment Posting = 0 units (Disabled - Console Print Only)
 
 **Quota Math for Single Target ($N=1$):**
 
@@ -162,7 +164,7 @@ The YouTube Data API v3 enforces a default daily quota limit of **10,000 units**
 * **Base Quota Cost:** 9,600 units per day.
 * **Remaining Buffer:** 400 units
 
-**Status: Highly Safe & Optimized.** The 400-unit buffer allows the bot to successfully post up to 8 comments per day (or handle script restarts/errors) without hitting the API lockout wall, while maintaining the fastest possible organic polling rate.
+**Status: 100% Safe & Optimized.** The 400-unit buffer allows for API retries and restarts without hitting limits. Because posting is disabled, we consume absolutely no posting quota.
 
 ---
 
@@ -170,7 +172,23 @@ The YouTube Data API v3 enforces a default daily quota limit of **10,000 units**
 
 | Threat Vector | Bot Impact | System Mitigation |
 | --- | --- | --- |
-| **Silent Shadowbanning** | Comments only visible to the bot account. | **Execution Jitter (14-28s)** strictly enforced. "First" comments must include {video_title} or {timestamp} to maintain high entropy and bypass creator blacklists. |
-| **Static Traffic Signatures** | IP/Account flagged for bot activity by Google ML. | **Polling Jitter (7.5-10.5s)** ensures the API request interval is mathematically unpredictable, blurring the metronome effect. |
-| **System Crash / Reboot** | Bot loses track of the latest video and misses an upload. | **Persistent Local State** (`state.json`) is updated the millisecond an ID is detected, before the execution jitter even begins. |
-| **Blocking the Loop** | While waiting 28s to post, the bot fails to poll for another video. | The **Asynchronous Architecture** (`asyncio.create_task`) decouples polling from posting, ensuring the network mask never drops its rhythm. |
+| **Account Termination / Ban** | Risk of losing access to Google account services. | **100% mitigated** by using `youtube.readonly` scope and disabling comment posting entirely. The bot only reads data and prints locally. |
+| **Static Traffic Signatures** | IP flagged for bot activity by Google. | **Polling Jitter (7.5-10.5s)** ensures the API request interval is mathematically unpredictable, blurring the metronome effect. |
+| **System Crash / Reboot** | Bot loses track of the latest video. | **Persistent Local State** (`state.json`) is updated the millisecond an ID is detected, before the simulation jitter begins. |
+| **Blocking the Loop** | While simulation is waiting, bot fails to poll. | The **Asynchronous Architecture** (`asyncio.create_task`) decouples polling from logging, keeping the polling rhythm independent. |
+
+---
+
+## 7. Technical Caveats & Engineering Decisions
+
+### Windows OS Compatibility (SIGINT / Graceful Shutdown)
+* **Problem**: Standard Python `asyncio` on Windows (which uses the `ProactorEventLoop` since Python 3.8) does not support registering signal handlers using `loop.add_signal_handler()` for `SIGINT` or `SIGTERM`, resulting in a runtime `NotImplementedError`.
+* **Resolution**: Instead of registering signal handlers on the event loop, capture `KeyboardInterrupt` in a standard try-except block wrapping `asyncio.run(main())`. When caught, trigger a graceful shutdown by cancelling all pending asynchronous tasks and gathering their results.
+
+### Path Safety
+* **Problem**: Storing or reading files (like `token.json`, `client_secrets.json`, and `state.json`) using relative paths can cause runtime failures or duplicate logins if the bot is executed from a working directory other than the project root.
+* **Resolution**: Resolve all paths dynamically using absolute paths relative to the script location (e.g., combining `os.path.dirname(os.path.abspath(__file__))` with relative path traversals). This ensures the application functions identically regardless of where it is invoked.
+
+### Exception Handling & Network Resilience
+* **Problem**: Continuous, high-frequency API polling is highly susceptible to temporary network outages, connection resets, and transient API issues. Without explicit error handling, any temporary failure will crash the engine.
+* **Resolution**: Wrap external API and network requests (like calling the YouTube Data API) in a retry loop implementing exponential backoff (e.g., retrying after 2s, then 4s, then 8s). This prevents the bot from crashing during transient failures while preserving overall system uptime.

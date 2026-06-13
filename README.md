@@ -1,28 +1,27 @@
-# first-comment-sniper 🚧 (Work in Progress)
-
-> [!WARNING]
-> ### ⚠️ Disclaimer & Warning
-> **This project is for educational and learning purposes only.**
->
-> * **Policy Violation:** Using this bot violates YouTube's Terms of Service and automated interaction policies.
-> * **High Risk of Penalty:** Running this software carries a **high risk of shadowbanning, comment hiding, or permanent account termination**.
-> * **Burner Accounts Required:** **DO NOT** use your personal or main Google/YouTube account. If you choose to run this bot, only use dedicated **burner accounts** that you can afford to lose.
-> * **No Liability:** The author(s) and contributors assume no responsibility for any account suspension, loss of data, or consequences resulting from the use of this software. Use at your own risk.
+# YouTube Comment Sniper 🎯
 
 Being first feels good. Telling the world you're first feels even better. Now, you can claim the throne every single time. This Python-powered sniper bot automatically drops a 'First!' comment the millisecond your target YouTuber uploads a video.
 
+*(... well, almost.)*
+
+### 🚧 Safe Simulation Edition (WIP)
+
+Right now, this project is operating as a **Safe Simulation**. That means it does everything a sniper bot does—detects new uploads in seconds and mimics human reaction times—but it only *simulates* the comment locally on your console instead of actually posting it. 
+
+This lets us test the Google Cloud API limits, architecture, and OAuth flows securely without any risk of shadowbans or account termination. It's 100% compliant with YouTube's Terms of Service.
+
 ---
 
-## 🚧 Project Status: Work In Progress
-This project is currently in the initial development and architecture phase. The codebase is actively being written and is not yet ready for deployment.
+## ✨ How it Works (Under the Hood)
+* **Zero Risk:** It only uses `readonly` access to your YouTube account, so it physically can't post, edit, or delete anything.
+* **Lightning Fast Polling:** An asynchronous engine checks the target channel's upload playlist every ~9 seconds, safely utilizing 96% of the daily free API quota without ever going over.
+* **Persistent Memory:** It tracks the latest video in a local `state.json` file. If the script crashes or your network drops, it just picks right back up where it left off.
+* **Human-like Jitter:** Anti-bot algorithms hate robotic speed. The system applies a randomized delay (14 to 28 seconds) to simulate someone typing frantically on their keyboard.
+* **Dynamic Comments:** It pulls jokes from a custom JSON list and injects real-time variables like `{video_title}` and `{timestamp}` so every comment feels completely organic.
 
-### Proposed Architecture & Implementation Plan
-We are building a robust, single-channel monitoring system using Python and the official Google Data API. The core strategy includes:
+---
 
-- **Asynchronous Polling Engine**: A non-blocking `asyncio` loop that queries the target channel's upload playlist every ~9 seconds, safely utilizing 96% of the daily free quota.
-- **Persistent State**: The bot will track the latest video ID in a local `state.json` file to easily recover from crashes or network failures without missing an upload.
-- **Behavioral Jitter**: To mimic human reaction times and avoid anti-bot algorithms, the system will apply a randomized delay of 14 to 28 seconds before posting.
-- **Dynamic Commenting**: Comments will be pulled from a randomized JSON template list and injected with contextual variables like `{video_title}` and `{timestamp}` to prevent duplicate shadowbans.
-- **Official OAuth 2.0 Flow**: Users will authenticate using their own Google Cloud Project credentials, securely managed through auto-refreshing tokens.
+## 🔮 Future Roadmap: "Hard Mode"
+Currently, the bot is locked to "Safe Mode". Once the core polling engine is fully validated, we plan to add an environment variable toggle (e.g., `LIVE_MODE=True`). 
 
-*(Detailed installation instructions, configuration guides, and setup steps will be added here once the project reaches a functional build.)*
+When flipped, the bot will transition from local simulation to actually firing `comments().insert()` requests to drop the payload live on YouTube. *(When that day comes, burner accounts will be highly recommended!)*
