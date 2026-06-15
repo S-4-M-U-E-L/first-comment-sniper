@@ -10,11 +10,7 @@ __pycache__/
 *$py.class
 
 # Google API Credentials & State
-credentials.json
-client_secrets.json
-client_secret*.json
-token.json
-state.json
+credentials/
 
 # Temp folder
 .tmp/

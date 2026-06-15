@@ -1,5 +1,5 @@
 """
-execution/main.py
+src/main.py
 
 The asynchronous driver for the YouTube Comment Sniper.
 Reads .env, authenticates, resolves the target playlist, and runs the
@@ -34,10 +34,10 @@ if sys.stdout.encoding != 'utf-8':
 
 from dotenv import load_dotenv
 
-# Fix: Ensure execution/ is on sys.path regardless of working directory.
+# Fix: Ensure src/ is on sys.path regardless of working directory.
 # Satisfies strategy.md §7 Path Safety — the bot must run identically whether
-# invoked as `python execution/main.py` (from project root) or `python main.py`
-# (from inside execution/). Without this, bare imports raise ModuleNotFoundError.
+# invoked as `python src/main.py` (from project root) or `python main.py`
+# (from inside src/). Without this, bare imports raise ModuleNotFoundError.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from auth import get_credentials
@@ -52,11 +52,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # --- Fix 2 (Path Safety): Anchor to project root regardless of CWD ---
-# __file__ = execution/main.py → .parent = execution/ → .parent = project root
+# __file__ = src/main.py → .parent = src/ → .parent = project root
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # --- Absolute paths for all persistent files ---
-STATE_FILE = PROJECT_ROOT / "state.json"
+STATE_FILE = PROJECT_ROOT / "data" / "state.json"
 
 # --- Active background snipe tasks (tracked for graceful shutdown) ---
 active_tasks: set = set()
@@ -97,7 +97,7 @@ def load_templates() -> list:
     Fix 2: path anchored to PROJECT_ROOT.
     Falls back to ["First!"] on any read or parse error.
     """
-    _raw = os.getenv("COMMENT_TEMPLATES_JSON", "templates.json")
+    _raw = os.getenv("COMMENT_TEMPLATES_JSON", "config/templates.json")
     templates_file = PROJECT_ROOT / _raw
     try:
         with open(templates_file, "r", encoding="utf-8") as f:

@@ -40,6 +40,12 @@ The project has completed the core implementation phase. All three execution scr
   ]
   ```
 
+- [ ] **Populate `templates.json` with dynamic strings** — The file should contain an array of interpolated comment strings using `{video_title}` and `{timestamp}` variables. Avoid static strings like `"First!"` which look robotic and reduce anti-detection effectiveness.
+
+- [ ] **Draft `directives/run_comment_sniper.md`** — A complete deployment guide covering: how to run the bot locally, how to deploy it to a 24/7 cloud environment (Google Cloud e2-micro or AWS t2.micro free tier), and how to set up the GCP Console OAuth credentials. Also add the GCP Console setup instructions to `README.md`.
+
+- [ ] **Fix the static `"First!"` fallback in `main.py`** — The `load_templates()` function currently falls back to `["First!"]` if `templates.json` fails to load. This is a static, detectable string. Replace it with a dynamic fallback such as `["Here for {video_title}!"]` that still uses the interpolation system.
+
 ## Errors Fixed
 
 | Date       | Error                                    | Fix Applied                                                  |

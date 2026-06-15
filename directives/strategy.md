@@ -1,4 +1,4 @@
- # YouTube Comment Sniper - Programming Strategy & Architecture Plan
+﻿ # YouTube Comment Sniper - Programming Strategy & Architecture Plan
 
 This document details the programming strategy, development phases, architectural structure, testing procedures, and YouTube API quota management for building the **YouTube Comment Sniper** application. The system is designed for **single-channel, high-speed monitoring**, utilizing asynchronous execution and intelligent behavioral masking to prevent loop-blocking and shadowbans.
 
@@ -39,12 +39,12 @@ The application separates concerns into three distinct layers to ensure executio
 
 ### Layer 2: Orchestration (Decision & Control)
 
-* **`execution/main.py`**: The asynchronous driver. Reads `.env`, initializes Layer 3 modules, runs the non-blocking polling loop, spawns background execution tasks, and logs statuses.
+* **`src/main.py`**: The asynchronous driver. Reads `.env`, initializes Layer 3 modules, runs the non-blocking polling loop, spawns background execution tasks, and logs statuses.
 
 ### Layer 3: Execution (Deterministic Actions)
 
-* **`execution/auth.py`**: Handles OAuth 2.0 flow, token caching (`token.json`), and automatic token refreshes (restricted to the `youtube.readonly` scope).
-* **`execution/youtube_client.py`**: Contains strictly defined functions for Data API communications (fetching uploads).
+* **`src/auth.py`**: Handles OAuth 2.0 flow, token caching (`token.json`), and automatic token refreshes (restricted to the `youtube.readonly` scope).
+* **`src/youtube_client.py`**: Contains strictly defined functions for Data API communications (fetching uploads).
 
 ---
 
@@ -55,7 +55,7 @@ The application separates concerns into three distinct layers to ensure executio
 1. **Initialize Requirements**: Write the required packages to `requirements.txt`.
 2. **Environment Validation**: Load `.env` variables and assert that all required keys (`TARGET_CHANNEL_ID`, `COMMENT_TEMPLATES_JSON`, `GOOGLE_CLIENT_SECRETS_FILE`) are present.
 
-### Phase 2: OAuth 2.0 Authentication Helper (`execution/auth.py`)
+### Phase 2: OAuth 2.0 Authentication Helper (`src/auth.py`)
 
 1. Implement the credential resolver function.
 2. If `token.json` exists, load and validate.
@@ -64,8 +64,8 @@ The application separates concerns into three distinct layers to ensure executio
 
 ### Phase 3: Playlist ID Resolution & Persistent State
 
-1. **Channel Mapping**: Convert the `TARGET_CHANNEL_ID` (starts with `UC`) to the uploads playlist ID (starts with `UU`) by replacing the second character.
-2. **State Hydration**: On startup, read `state.json`. If it does not exist, fetch the latest video from the `UU` playlist and save its ID to establish a baseline. **Crucial**: The bot must write state to disk immediately after any baseline check or successful snipe.
+1. **Channel Mapping**: Resolve the uploads playlist ID by making a deterministic `youtube.channels().list(part='contentDetails')` API call and extracting the `uploads` playlist ID directly from the channel's `contentDetails.relatedPlaylists` object. This is more reliable than string manipulation (e.g., replacing `'UC'` with `'UU'` in a channel ID), as it works for all channel types and is guaranteed by the API contract.
+2. **State Hydration**: On startup, read `state.json`. If it does not exist, fetch the latest video from the resolved uploads playlist and save its ID to establish a baseline. **Crucial**: The bot must write state to disk immediately after any baseline check or successful snipe.
 
 ### Phase 4: The Asynchronous Polling Engine
 
@@ -122,7 +122,7 @@ async def polling_loop():
 
 ### Phase 6: Graceful Degradation & Error Handling
 
-1. **Network Retries**: Wrap the `YoutubelistItems().list` call in a robust `try-except` block targeting `socket.timeout` and `ConnectionResetError`. Apply an exponential backoff if the network drops.
+1. **Network Retries**: All YouTube Data API calls in `youtube_client.py` are wrapped in a custom `with_backoff` async wrapper. It applies exponential backoff with 10% jitter for transient HTTP errors (status codes 429, 500, 502, 503, 504), and exits immediately on fatal errors (401, 403). This is superior to a simple `try-except` block and prevents cascading failures without masking unrecoverable auth errors.
 2. **Signal Handling**: Implement hooks for `SIGINT` and `SIGTERM` to allow the asynchronous loop to finish pending post tasks before fully shutting down the script.
 
 ---
@@ -191,4 +191,4 @@ The YouTube Data API v3 enforces a default daily quota limit of **10,000 units**
 
 ### Exception Handling & Network Resilience
 * **Problem**: Continuous, high-frequency API polling is highly susceptible to temporary network outages, connection resets, and transient API issues. Without explicit error handling, any temporary failure will crash the engine.
-* **Resolution**: Wrap external API and network requests (like calling the YouTube Data API) in a retry loop implementing exponential backoff (e.g., retrying after 2s, then 4s, then 8s). This prevents the bot from crashing during transient failures while preserving overall system uptime.
+* **Resolution**: All API calls in `youtube_client.py` are wrapped in a custom `with_backoff` async wrapper that implements exponential backoff with 10% jitter for transient HTTP errors (429, 500, 502, 503, 504). Fatal authentication errors (401, 403) are not retried and cause an immediate exit, preventing runaway retry loops on unrecoverable failures. This deterministic retry strategy preserves system uptime without masking permanent errors.
