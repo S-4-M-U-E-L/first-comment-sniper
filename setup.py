@@ -57,6 +57,17 @@ def banner(msg: str) -> None:
 # Setup steps
 # ---------------------------------------------------------------------------
 
+def create_directories() -> None:
+    header("Creating necessary directories...")
+    for dirname in ["credentials", "data"]:
+        dir_path = PROJECT_ROOT / dirname
+        if not dir_path.exists():
+            dir_path.mkdir(parents=True, exist_ok=True)
+            ok(f"Created {dirname}/ directory.")
+        else:
+            skip(f"{dirname}/ directory already exists.")
+
+
 def create_venv() -> None:
     header("Creating virtual environment (.venv)...")
     if VENV_DIR.exists():
@@ -175,6 +186,7 @@ def main() -> None:
         sys.exit(1)
 
     try:
+        create_directories()
         create_venv()
         install_dependencies()
         configure_env()

@@ -136,6 +136,7 @@ def save_state(state: dict) -> None:
     Fix 2: uses absolute STATE_FILE path.
     """
     try:
+        STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
         with open(STATE_FILE, "w") as f:
             json.dump(state, f, indent=2)
     except OSError as e:
