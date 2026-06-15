@@ -1,4 +1,4 @@
-# YouTube Comment Sniper 🎯
+﻿# YouTube Comment Sniper 🎯
 
 Being first feels good. Telling the world you're first feels even better. Now, you can claim the throne every single time. This Python-powered sniper bot automatically drops a 'First!' comment the millisecond your target YouTuber uploads a video.
 
@@ -29,7 +29,7 @@ This lets us test the Google Cloud API limits, architecture, and OAuth flows sec
 
 ### 1. Clone and run setup
 ```bash
-git clone https://github.com/yourusername/first-comment-sniper.git
+git clone https://github.com/S-4-M-U-E-L/first-comment-sniper.git
 cd first-comment-sniper
 python setup.py
 ```

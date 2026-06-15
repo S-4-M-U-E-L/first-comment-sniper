@@ -1,4 +1,4 @@
-# Run Guide: YouTube Comment Sniper
+﻿# Run Guide: YouTube Comment Sniper
 
 This is the operational SOP for running and deploying the YouTube Comment Sniper. For initial project setup, see `README.md` first.
 
@@ -131,7 +131,7 @@ Google Cloud's `e2-micro` instance is permanently free within the always-free li
 
 ```bash
 # After SSH-ing into your VM:
-git clone https://github.com/yourusername/first-comment-sniper.git
+git clone https://github.com/S-4-M-U-E-L/first-comment-sniper.git
 cd first-comment-sniper
 python3 setup.py
 
