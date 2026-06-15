@@ -1,4 +1,4 @@
-# Agent Instructions
+﻿# Agent Instructions
 
 You operate within a 3-layer architecture that separates concerns to maximize reliability. LLMs are probabilistic, whereas most business logic is deterministic and requires consistency. This system fixes that mismatch.
 
@@ -12,10 +12,10 @@ You operate within a 3-layer architecture that separates concerns to maximize re
 **Layer 2: Orchestration (Decision making)**
 - This is you. Your job: intelligent routing.
 - Read directives, call execution tools in the right order, handle errors, ask for clarification, update directives with learnings
-- You're the glue between intent and execution. E.g you don't try scraping websites yourself—you read `directives/scrape_website.md` and come up with inputs/outputs and then run `execution/scrape_single_site.py`
+- You're the glue between intent and execution. E.g you don't try scraping websites yourself—you read `directives/scrape_website.md` and come up with inputs/outputs and then run `src/scrape_single_site.py`
 
 **Layer 3: Execution (Doing the work)**
-- Deterministic Python scripts in `execution/`
+- Deterministic Python scripts in `src/`
 - Environment variables, api tokens, etc are stored in `.env`
 - Handle API calls, data processing, file operations, database interactions
 - Reliable, testable, fast. Use scripts instead of manual work. Commented well.
@@ -25,7 +25,7 @@ You operate within a 3-layer architecture that separates concerns to maximize re
 ## Operating Principles
 
 **1. Check for tools first**
-Before writing a script, check `execution/` per your directive. Only create new scripts if none exist.
+Before writing a script, check `src/` per your directive. Only create new scripts if none exist.
 
 **2. Self-anneal when things break**
 - Read error message and stack trace
@@ -53,7 +53,7 @@ Errors are learning opportunities. When something breaks:
 
 **Directory structure:**
 - `.tmp/` - All intermediate files (dossiers, scraped data, temp exports). Never commit, always regenerated.
-- `execution/` - Python scripts (the deterministic tools)
+- `src/` - Python scripts (the deterministic tools)
 - `directives/` - SOPs in Markdown (the instruction set)
 - `.env` - Environment variables and API keys
 - `credentials.json`, `token.json` - Google OAuth credentials (required files, in `.gitignore`)
@@ -67,3 +67,18 @@ You sit between human intent (directives) and deterministic execution (Python sc
 Be pragmatic. Be reliable. Self-anneal.
 
 
+## Cross-Platform & Encoding Standards
+
+All agents working on this project MUST follow these rules without exception:
+
+**Cross-Platform Compliance:**
+- Never hardcode OS-specific path separators (`\` or `/`). Always use `pathlib.Path` for constructing file paths.
+- Never hardcode OS-specific executable paths (e.g., `.venv/Scripts/python` vs `.venv/bin/python`). Use `sys.executable` or `pathlib` to resolve them dynamically.
+- Do not use OS-specific shell commands in scripts. All Python scripts must run identically on Windows, macOS, and Linux.
+
+**Encoding:**
+- All file `open()` calls in Python must explicitly declare `encoding="utf-8"`. Never rely on the system default encoding.
+- All agents must read and write files strictly in UTF-8 format to prevent mojibake (garbled characters).
+- When working in Windows terminals, be aware that the default encoding is `cp1252`. Always reconfigure stdout with `sys.stdout.reconfigure(encoding='utf-8')` at the top of any script that prints non-ASCII characters.
+
+**Why this matters:** This project is designed to run identically whether executed by an AI agent or a human on native Windows, WSL, macOS, or Linux. Path and encoding inconsistencies are the #1 cause of cross-platform bugs.

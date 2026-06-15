@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 SCOPES = ['https://www.googleapis.com/auth/youtube.readonly']
 
 # Fix 2 (Path Safety): Anchor to project root regardless of working directory.
-# __file__ is execution/auth.py → .parent = execution/ → .parent = project root
+# __file__ is src/auth.py → .parent = src/ → .parent = project root
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -37,10 +37,13 @@ def get_credentials():
 
     # Fix 2: anchor env-var value against PROJECT_ROOT; handles both bare filenames
     # and absolute paths (pathlib replaces left side when right side is absolute)
-    _secrets_raw = os.getenv("GOOGLE_CLIENT_SECRETS_FILE", "client_secrets.json")
+    _secrets_raw = os.getenv("GOOGLE_CLIENT_SECRETS_FILE", "credentials/client_secrets.json")
     client_secrets_file = PROJECT_ROOT / _secrets_raw
-    token_file = PROJECT_ROOT / "token.json"   # Fix 2: was bare "token.json"
+    token_file = PROJECT_ROOT / "credentials" / "token.json"
     creds = None
+
+    # Ensure credentials/ directory exists before any read/write
+    token_file.parent.mkdir(parents=True, exist_ok=True)
 
     # token.json stores access and refresh tokens; created on first successful auth.
     if token_file.exists():
@@ -79,7 +82,7 @@ def get_credentials():
                 except RefreshError as e:
                     # Fatal — refresh token revoked or expired; browser re-auth required
                     logger.error(f"Refresh token revoked or expired: {e}")
-                    logger.error("Please delete token.json and re-authenticate.")
+                    logger.error("Please delete credentials/token.json and re-authenticate.")
                     sys.exit(1)
                 except Exception as e:
                     logger.error(f"Unexpected error during token refresh: {e}")
@@ -90,7 +93,7 @@ def get_credentials():
             logger.info(f"Starting new OAuth flow using {client_secrets_file}...")
             if not client_secrets_file.exists():
                 logger.error(f"Client secrets file '{client_secrets_file}' not found.")
-                logger.error("Please download it from Google Cloud Console and place it in the project root.")
+                logger.error("Please download it from Google Cloud Console and place it in credentials/.")
                 sys.exit(1)
 
             flow = InstalledAppFlow.from_client_secrets_file(

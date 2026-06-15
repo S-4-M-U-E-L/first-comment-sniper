@@ -134,7 +134,7 @@ async def get_uploads_playlist_id(youtube, channel_id: str) -> str:
         if status == 403:
             logger.error("Access forbidden (403) — check your OAuth scopes and Google Cloud project configuration.")
         elif status == 401:
-            logger.error("Unauthorized (401) — OAuth token may be invalid. Delete token.json and re-authenticate.")
+            logger.error("Unauthorized (401) — OAuth token may be invalid. Delete credentials/token.json and re-authenticate.")
         raise
 
 
@@ -171,6 +171,6 @@ async def get_latest_video_id(youtube, uploads_playlist_id: str) -> Tuple[Option
             # Fatal mid-run — the polling loop must stop
             logger.error(
                 "Auth token expired or revoked mid-run (401). "
-                "Restart the bot and delete token.json to re-authenticate."
+                "Restart the bot and delete credentials/token.json to re-authenticate."
             )
         raise
