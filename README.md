@@ -31,10 +31,19 @@ This lets us test the Google Cloud API limits, architecture, and OAuth flows sec
 - **Google Cloud Account**: A free account to access the YouTube API (see Setup below).
 
 ### 1. Clone and run setup
-```bash
+
+**Windows:**
+```cmd
 git clone https://github.com/S-4-M-U-E-L/first-comment-sniper.git
 cd first-comment-sniper
 python setup.py
+```
+
+**macOS / Linux:**
+```bash
+git clone https://github.com/S-4-M-U-E-L/first-comment-sniper.git
+cd first-comment-sniper
+python3 setup.py
 ```
 The setup script handles everything: creates a virtual environment, installs all dependencies, and walks you through entering your target channel ID interactively. No manual `pip install` needed.
 
