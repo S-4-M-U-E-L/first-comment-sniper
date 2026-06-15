@@ -1,4 +1,4 @@
-﻿# YouTube Comment Sniper 🎯
+# YouTube Comment Sniper 🎯
 
 Being first feels good. Telling the world you're first feels even better. Now, you can claim the throne every single time. This Python-powered sniper bot automatically drops a 'First!' comment the millisecond your target YouTuber uploads a video.
 
@@ -24,8 +24,11 @@ This lets us test the Google Cloud API limits, architecture, and OAuth flows sec
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.8 or newer ([download here](https://www.python.org/downloads/))
-- A free Google Cloud account (see Google Cloud Setup below)
+- **Python 3.8+**:
+  - **Windows**: `winget install Python.Python.3.11` (or type `python` in cmd to open the Store)
+  - **macOS**: `brew install python3`
+  - **Linux**: `sudo apt update && sudo apt install python3 python3-venv`
+- **Google Cloud Account**: A free account to access the YouTube API (see Setup below).
 
 ### 1. Clone and run setup
 ```bash
