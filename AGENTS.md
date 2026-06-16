@@ -1,4 +1,4 @@
-﻿# Agent Instructions
+# Agent Instructions
 
 You operate within a 3-layer architecture that separates concerns to maximize reliability. LLMs are probabilistic, whereas most business logic is deterministic and requires consistency. This system fixes that mismatch.
 
@@ -47,18 +47,15 @@ Errors are learning opportunities. When something breaks:
 
 ## File Organization
 
-**Deliverables vs Intermediates:**
-- **Deliverables**: Google Sheets, Google Slides, or other cloud-based outputs that the user can access
-- **Intermediates**: Temporary files needed during processing
-
 **Directory structure:**
-- `.tmp/` - All intermediate files (dossiers, scraped data, temp exports). Never commit, always regenerated.
-- `src/` - Python scripts (the deterministic tools)
+- `src/` - Python scripts (the deterministic execution layer)
 - `directives/` - SOPs in Markdown (the instruction set)
-- `.env` - Environment variables and API keys
-- `credentials.json`, `token.json` - Google OAuth credentials (required files, in `.gitignore`)
+- `config/` - Configuration files (`templates.json`, `.env.example`)
+- `data/` - Persistent runtime state (`data/state.json` — never commit)
+- `credentials/` - Google OAuth files (`client_secrets.json`, `token.json` — never commit, in `.gitignore`)
+- `.env` - Environment variables and API keys (never commit, in `.gitignore`)
 
-**Key principle:** Local files are only for processing. Deliverables live in cloud services (Google Sheets, Slides, etc.) where the user can access them. Everything in `.tmp/` can be deleted and regenerated.
+**Key principle:** All output for this project is printed to the console (simulation mode). There are no cloud deliverables and no intermediate temp files. The only persistent local file is `data/state.json`, which tracks the latest seen video ID for crash recovery.
 
 ## Summary
 

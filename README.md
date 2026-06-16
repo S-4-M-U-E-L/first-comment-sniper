@@ -54,12 +54,14 @@ The bot connects to YouTube using your own Google Cloud credentials. Follow the 
 
 **Windows:**
 ```
-.venv\Scripts\python src\main.py
+run.bat
 ```
 **macOS / Linux:**
+```bash
+./run.sh
 ```
-.venv/bin/python src/main.py
-```
+> **First run only (macOS/Linux):** you may need to make the script executable first: `chmod +x run.sh`
+
 The first run will open a browser window for Google login. After that, `credentials/token.json` is saved automatically and the bot never asks again.
 
 ---

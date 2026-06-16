@@ -86,7 +86,7 @@ def validate_environment():
         for m in missing:
             print(f"  - {m}")
         print("\nPlease copy .env.example to .env and fill in the missing values.")
-        sys.exit(1)
+        sys.exit(1)  # Raises SystemExit (BaseException) — bypasses finally: shutdown() in main(), but no tasks exist yet at this point so this is safe.
 
     logger.info("Environment validation passed.")
 

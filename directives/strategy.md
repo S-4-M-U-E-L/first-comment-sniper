@@ -1,4 +1,4 @@
-﻿ # YouTube Comment Sniper - Programming Strategy & Architecture Plan
+ # YouTube Comment Sniper - Programming Strategy & Architecture Plan
 
 This document details the programming strategy, development phases, architectural structure, testing procedures, and YouTube API quota management for building the **YouTube Comment Sniper** application. The system is designed for **single-channel, high-speed monitoring**, utilizing asynchronous execution and intelligent behavioral masking to prevent loop-blocking and shadowbans.
 
@@ -75,12 +75,14 @@ The core loop must use `asyncio` to ensure polling continues even while a commen
 2. **Detection Logic**: If the returned `videoId` differs from the one stored in `state.json`, a new upload is confirmed.
 3. **Delegation**: Upon detection, the bot immediately writes the new ID to `state.json`, then spawns an independent background task via `asyncio.create_task()` to handle the execution jitter and posting, while the main loop returns to polling.
 
-### Phase 5: Execution Jitter & Dynamic "First" Contextualization (Console Print Only)
+### Phase 5: Execution Jitter & Comment Output (Console Print Only)
 
-To simulate the speed and variance of a "First!" comment without any risk of suspension, the bot calculates human-like delay and prepares the dynamic text, then prints it to the console.
+To simulate the speed and variance of a "First!" comment without any risk of suspension, the bot calculates a human-like delay, then prints the comment text to the console.
 
 1. **Execution Jitter (Behavioral Mask)**: Introduce a randomized asynchronous sleep between **14 and 28 seconds** inside the delegated background task.
-2. **Dynamic "First" Contextualization**: Never use static, one-word strings. Instead, interpolate variables into templates to demonstrate context (e.g., "First! Can't wait to watch {video_title}." or "Here before the views update! ({timestamp})").
+2. **Comment Templates — Simulation vs. Live-Run**:
+   - **Simulation mode** (current): `config/templates.json` contains a single static string `["First!"]`. This is intentional — the project is a clean, functional demonstration and does not require contextualized output at this stage. Static messages are explicitly accepted in simulation mode.
+   - **Live-run mode** (future): Replace the template list with dynamic strings that interpolate context variables (e.g., `"First! Can't wait to watch {video_title}."` or `"Here before the views update! ({timestamp})"`). The `str.format()` call in `main.py` already supports `{video_title}` and `{timestamp}` — no code changes are needed, only a `templates.json` update.
 3. **Printing**: Output the finalized comment to the terminal console instead of posting it to YouTube.
 
 *Core Logic Structure Example:*

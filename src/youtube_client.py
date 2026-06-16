@@ -1,5 +1,5 @@
 """
-execution/youtube_client.py
+src/youtube_client.py
 
 Fix 3 (Exception Handling & Network Resilience):
 Contains all YouTube Data API v3 communication functions. Every network call
@@ -55,6 +55,12 @@ async def with_backoff(func, *args, max_retries=BACKOFF_MAX_RETRIES, **kwargs):
     - Uses asyncio.sleep (non-blocking) — must be called from async context
     - On exhaustion: re-raises the last caught exception to the caller
     """
+    # Note: asyncio.CancelledError is a BaseException (not Exception) and is
+    # NOT caught by either 'except HttpError' or 'except _TRANSIENT_NETWORK_ERRORS'.
+    # This is intentional — CancelledError propagates freely through this function
+    # so that task cancellation during shutdown works correctly. Never add a broad
+    # 'except Exception' here; it would silently swallow cancellations and cause
+    # the event loop to hang on shutdown.
     delay = BACKOFF_INITIAL_DELAY
     last_exception = None
 

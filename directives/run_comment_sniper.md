@@ -1,4 +1,4 @@
-﻿# Run Guide: YouTube Comment Sniper
+# Run Guide: YouTube Comment Sniper
 
 This is the operational SOP for running and deploying the YouTube Comment Sniper. For initial project setup, see `README.md` first.
 
@@ -6,17 +6,19 @@ This is the operational SOP for running and deploying the YouTube Comment Sniper
 
 ## 1. Running Locally
 
-After completing the setup in `README.md`, start the bot with:
+After completing the setup in `README.md`, start the bot using the included runner script:
 
 **Windows:**
 ```
-.venv\Scripts\python src\main.py
+run.bat
 ```
 
 **macOS / Linux:**
 ```bash
-.venv/bin/python src/main.py
+./run.sh
 ```
+
+> **Note:** These are thin wrapper scripts in the project root that activate the virtual environment Python and run `src/main.py`. They keep the run command short without changing any project structure. If you prefer to run manually, the full command is `.venv/bin/python src/main.py` (or `.venv\Scripts\python src\main.py` on Windows).
 
 ### What You'll See
 
@@ -141,6 +143,10 @@ tmux new -s sniper
 .venv/bin/python src/main.py
 # Ctrl+B, D to detach
 ```
+
+> [!CAUTION]
+> **Never commit credentials to version control.**
+> `credentials/client_secrets.json` and `credentials/token.json` grant full access to your Google account services. They are listed in `.gitignore` and must stay there. Never push them to a public — or even a private — GitHub repository. If accidentally committed, immediately revoke the OAuth client from Google Cloud Console and generate new credentials.
 
 ---
 
